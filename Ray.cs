@@ -9,12 +9,13 @@ class Ray
 {
     public Vector3 start;
     public Vector3 direction;
-    public float distance;
+    public double distance;
 
     public Ray(Vector3 start, Vector3 direction)
     {
         this.start = start;
         this.direction = direction;
+        distance = double.PositiveInfinity;
     }
 }
 

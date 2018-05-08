@@ -13,4 +13,8 @@ class Primitive
     {
         this.color = color;
     }
+
+    public virtual void Intersect(Ray ray)
+    {
+    }
 }

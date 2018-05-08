@@ -7,10 +7,25 @@ using System.Threading.Tasks;
 
 class Raytracer
 {
-    public void Render(Camera c, Surface screen)
+    Ray ray;
+    Intersection intersection;
+
+    public void Render(Camera c, Surface screen, Scene scene)
     {
         for (int x = 0; x < screen.width; x++)
             for (int y = 0; y < screen.height; y++)
-                c.ShootRay(new Vector2(x / screen.width, y / screen.height));
+            {
+                ray = c.ShootRay(new Vector2(x / screen.width, y / screen.height));
+                intersection = new Intersection(ray, scene);
+                screen.Plot(x, y, intersection.color);
+            }
+
+
+        /*foreach (Ray ray in rays)
+            intersections.Add(new Intersection(ray, scene));
+
+        for (int x = 0; x < screen.width; x++)
+            for (int y = 0; y < screen.height; y++)
+                screen.Plot()*/
     }
 }

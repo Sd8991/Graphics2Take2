@@ -16,7 +16,7 @@ class Sphere : Primitive
         this.position = position;
     }
 
-    public void Intersect(Ray ray)
+    public override void Intersect(Ray ray)
     {
         Vector3 c = position - ray.start;
         float t = Vector3.Dot(c, ray.direction);

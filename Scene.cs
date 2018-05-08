@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 class Scene
 {
-    List<Primitive> primitives = new List<Primitive>();
+    public List<Primitive> primitives = new List<Primitive>();
     List<Light> lights = new List<Light>();
+
+    public Scene()
+    {
+        primitives.Add(new Sphere(new OpenTK.Vector3(0, 0, 5), new OpenTK.Vector3(200, 0, 100), 3));
+    }
 }

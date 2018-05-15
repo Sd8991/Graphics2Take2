@@ -19,15 +19,7 @@ class Raytracer
             {
                 ray = c.ShootRay(new Vector3((x * 2 / screen.width), (y / screen.height), 1), x, y);
                 intersection = scene.intersectScene(ray);
-                /*try
-                {
-                    screen.pixels[(int)x + (int)y * screen.width] = 102/*CreateColor(intersection.color);
-                }
-                catch { screen.pixels[(int)x + (int)y * screen.width] = CreateColor(Vector3.Zero); }*/
-
-                if (intersection != null)
-                    screen.pixels[(int)x + (int)y * screen.width] = CreateColor(intersection.color);
-                else screen.pixels[(int)x + (int)y * screen.width] = CreateColor(Vector3.Zero);
+                screen.pixels[(int)x + (int)y * screen.width] = CreateColor(intersection.color);
 
                 if (y == 256 && x % 5 == 0)
                 {

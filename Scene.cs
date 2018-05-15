@@ -15,6 +15,7 @@ class Scene
         primitives.Add(new Sphere(new Vector3(-5, 0, 10), new Vector3(1, 0, 0.5f), 2));
         primitives.Add(new Sphere(new Vector3(0, 0, 10), new Vector3(1, 0.5f, 1), 2));
         primitives.Add(new Sphere(new Vector3(5, 0, 10), new Vector3(0, 0, 1), 2));
+        primitives.Add(new Plane(15, new Vector3(1, 1, 0), new Vector3(0, 0, -1)));
     }
 
     public Intersection intersectScene(Ray ray)
@@ -30,6 +31,12 @@ class Scene
             {
                 Sphere sphere = (Sphere)p;
                 currentIntersect = sphere.Intersect(ray);
+            }
+
+            if (p is Plane)
+            {
+                Plane plane = (Plane)p;
+                currentIntersect = plane.Intersect(ray);
             }
 
             if (currentIntersect != null && currentIntersect.intersectDistance < nearestIntersectDist)

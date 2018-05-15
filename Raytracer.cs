@@ -14,16 +14,20 @@ class Raytracer
     public void Render(Camera c, Surface screen, Scene scene)
     {
         Vector2 debugcpos = TranslateToDebug(c.position, screen);
-        for (float x = 0; x < screen.width / 2; x++)
-            for (float y = 0; y < screen.height; y++)
+        for (float y = 0; y < screen.height; y++)
+            for (float x = 0; x < screen.width / 2; x++)
             {
-                ray = c.ShootRay(new Vector3(-1 + (x * 2 / screen.width), -1 + (y * 2 / screen.height), 1), x, y);
+                ray = c.ShootRay(new Vector3((x * 2 / screen.width), (y / screen.height), 1), x, y);
                 intersection = scene.intersectScene(ray);
-                try
+                /*try
                 {
-                    screen.Plot((int)x, (int)y, CreateColor(intersection.color));
+                    screen.pixels[(int)x + (int)y * screen.width] = 102/*CreateColor(intersection.color);
                 }
-                catch { screen.Plot((int)x, (int)y, CreateColor(Vector3.Zero)); }
+                catch { screen.pixels[(int)x + (int)y * screen.width] = CreateColor(Vector3.Zero); }*/
+
+                if (intersection != null)
+                    screen.pixels[(int)x + (int)y * screen.width] = CreateColor(intersection.color);
+                else screen.pixels[(int)x + (int)y * screen.width] = CreateColor(Vector3.Zero);
 
                 if (y == 256 && x % 5 == 0)
                 {
@@ -41,6 +45,6 @@ class Raytracer
 
     public int CreateColor(Vector3 color)
     {
-        return ((int)color.X << 16) + ((int)color.Y << 8) + (int)color.Z;
+        return (((int)color.X) * 255 << 16) + (((int)color.Y) * 255 << 8) + ((int)color.Z) * 255;
     }
 }

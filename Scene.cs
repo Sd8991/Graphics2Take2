@@ -11,6 +11,31 @@ class Scene
 
     public Scene()
     {
-        primitives.Add(new Sphere(new OpenTK.Vector3(0, 0, 5), new OpenTK.Vector3(200, 0, 100), 3));
+        primitives.Add(new Sphere(new OpenTK.Vector3(0, 0, -10), new OpenTK.Vector3(200, 0, 100), 3));
+    }
+
+    public Intersection intersectScene(Ray ray)
+    {
+        double nearestIntersectDist = double.PositiveInfinity;
+        Intersection nearestIntersect = null;
+
+        foreach (Primitive p in primitives)
+        {
+            Intersection currentIntersect = null;
+
+            if (p is Sphere)
+            {
+                Sphere sphere = (Sphere)p;
+                currentIntersect = sphere.Intersect(ray);
+            }
+
+            if (currentIntersect != null && currentIntersect.intersectDistance < nearestIntersectDist)
+            {
+                nearestIntersect = currentIntersect;
+                nearestIntersectDist = currentIntersect.intersectDistance;
+            }
+        }
+
+        return nearestIntersect;
     }
 }

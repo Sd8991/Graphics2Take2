@@ -16,9 +16,10 @@ class Plane : Primitive
         this.distance = distance;
     }
 
-    public override void Intersect(Ray ray)
+    public override Intersection Intersect(Ray ray)
     {
         float t = -(Vector3.Dot(ray.start, normal) + distance) / (Vector3.Dot(ray.direction, normal));
         ray.distance = t;
+        return new Intersection(ray, this, normal);
     }
 }

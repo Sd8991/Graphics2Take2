@@ -14,7 +14,8 @@ class Primitive
         this.color = color;
     }
 
-    public virtual void Intersect(Ray ray)
+    public virtual Intersection Intersect(Ray ray)
     {
+        return null;
     }
 }

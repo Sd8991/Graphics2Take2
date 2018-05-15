@@ -12,7 +12,7 @@ class Camera
     public Vector3 screenCenter;
     public Vector3 leftUpperCorner, rightUpperCorner, leftLowerCorner;
     public Vector3 screenHeight, screenWidth;
-    public Vector3 point;
+    public Vector3 Point;
 
     public Camera(Vector3 position, Vector3 direction)
     {
@@ -30,10 +30,11 @@ class Camera
         screenWidth = rightUpperCorner - leftUpperCorner;
     }
 
-    public Ray ShootRay(Vector2 point)
+    public Ray ShootRay(Vector3 point, float idX, float idY)
     {
-        this.point = leftUpperCorner + point.X * screenWidth + point.Y * (screenHeight);
-        Vector3 rayDir = (this.point - position).Normalized();
-        return new Ray(position, rayDir);
+        Point = leftUpperCorner + point.X * screenWidth + point.Y * (screenHeight);
+        Vector3 rayDir = (Point - position);
+        rayDir.Normalize();
+        return new Ray(position, rayDir, idX, idY);
     } 
 }

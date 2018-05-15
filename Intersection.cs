@@ -7,28 +7,18 @@ using System.Threading.Tasks;
 
 class Intersection
 {
-    public Primitive nearest;
-    public double intersectDist;
+    public Primitive nearestPrimitive;
+    public double intersectDistance;
     public Vector3 intersectNorm;
-    public int color;
+    public Vector3 intersectPoint;
+    public Vector3 color;
 
-
-    public Intersection(Ray ray, Scene scene)
+    public Intersection(Ray ray, Primitive primitive, Vector3 normal)
     {
-        nearest = null;
-        intersectDist = double.PositiveInfinity;
-        intersectNorm = Vector3.Zero;
-        
-
-        foreach (Primitive p in scene.primitives)
-        {
-            p.Intersect(ray);
-            if (ray.distance < intersectDist)
-            {
-                intersectDist = ray.distance;
-                nearest = p;
-                color = ((int)nearest.color.X << 16) + ((int)nearest.color.Y << 8) + (int)nearest.color.Z;
-            }
-        }
+        nearestPrimitive = primitive;
+        intersectDistance = ray.distance;
+        intersectPoint = ray.start + (float)intersectDistance * ray.direction;
+        intersectNorm = normal;
+        color = primitive.color;
     }
 }

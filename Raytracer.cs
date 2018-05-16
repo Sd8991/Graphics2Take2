@@ -81,7 +81,7 @@ class Raytracer
         Vector2 prevPoint = new Vector2((int)(s.radius * Math.Cos(0) * scale + center.X), (int)(s.radius * Math.Sin(0) * scale + center.Y));       
         for(int i = 0; i < 100; i++)
         {
-            Vector2 currPoint = new Vector2((int)(s.radius * Math.Cos(i) * scale + center.X), (int)(s.radius * Math.Sin(i) * scale + center.Y));
+            Vector2 currPoint = new Vector2((int)(s.radius * Math.Cos((2 * Math.PI / 100) * i) * scale + center.X), (int)(s.radius * Math.Sin((2 * Math.PI / 100) * i) * scale + center.Y));
             screen.Line((int)prevPoint.X, (int)prevPoint.Y, (int)currPoint.X, (int)currPoint.Y, CreateColor(s.color));
             prevPoint = currPoint;
         }

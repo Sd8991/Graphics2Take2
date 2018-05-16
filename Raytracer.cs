@@ -14,6 +14,8 @@ class Raytracer
     public void Render(Camera c, Surface screen, Scene scene)
     {
         Vector2 debugcpos = TranslateToDebug(c.position, screen);
+        foreach (Primitive s in scene.primitives)
+            if (s.GetType() == typeof(Sphere)) DebugSphere((Sphere)s, screen); ;
         for (float y = 0; y < screen.height; y++)
             for (float x = 0; x < screen.width / 2; x++)
             {
@@ -38,5 +40,17 @@ class Raytracer
     public int CreateColor(Vector3 color)
     {
         return (((int)color.X) * 255 << 16) + (((int)color.Y) * 255 << 8) + ((int)color.Z) * 255;
+    }
+
+    public void DebugSphere(Sphere s, Surface screen)
+    {
+        Vector2 center = TranslateToDebug(s.position, screen);
+        Vector2 prevPoint = new Vector2((int)(s.radius * Math.Cos(0) * scale + center.X), (int)(s.radius * Math.Sin(0) * scale + center.Y));       
+        for(int i = 0; i < 100; i++)
+        {
+            Vector2 currPoint = new Vector2((int)(s.radius * Math.Cos(i) * scale + center.X), (int)(s.radius * Math.Sin(i) * scale + center.Y));
+            screen.Line((int)prevPoint.X, (int)prevPoint.Y, (int)currPoint.X, (int)currPoint.Y, CreateColor(s.color));
+            prevPoint = currPoint;
+        }
     }
 }

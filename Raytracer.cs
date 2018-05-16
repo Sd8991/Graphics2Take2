@@ -47,7 +47,7 @@ class Raytracer
     public int HandleRay(Ray ray, Scene scene)
     {
         intersection = scene.intersectScene(ray);
-        intersectionColor = CreateColor(DirectIllumination(intersection) * 255);
+        intersectionColor = CreateColor(DirectIllumination(intersection) * intersection.color * 255);
         return intersectionColor;
         //shadowRay = scene.castShadowRay(intersection);
         //foreach (Light light in scene.lights)
@@ -65,14 +65,14 @@ class Raytracer
             Vector3 shadowRayDir = (light.position - intersection.intersectPoint).Normalized();
             float NdotL = Vector3.Dot(intersection.intersectNorm, shadowRayDir);
             if (!LightsourceVisible(intersection.intersectNorm, shadowRayDir)) color += Vector3.Zero;
-            else color += ((MathHelper.Clamp(NdotL, 0, 1) / attenuation) * light.color * intersection.color);
+            else color += ((MathHelper.Clamp(NdotL, 0, 1) / attenuation) * light.color);
         }
         return color;
     }
 
     public int CreateColor(Vector3 color)
     {
-        return (((int)color.X) * 255 << 16) + (((int)color.Y) * 255 << 8) + ((int)color.Z) * 255;
+        return ((Math.Min(255, (int)color.X) * 255) << 16) + ((Math.Min(255, (int)color.Y) * 255) << 8) + (Math.Min(255, (int)color.Z)) * 255;
     }
 
     public void DebugSphere(Sphere s, Surface screen)

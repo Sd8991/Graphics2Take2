@@ -12,11 +12,11 @@ class Scene
 
     public Scene()
     {
-        primitives.Add(new Sphere(new Vector3(-5, 0, 10), new Vector3(1, 0, 0.5f), 2));
+        primitives.Add(new Sphere(new Vector3(-5, 0, 20), new Vector3(1, 0, 0.5f), 2));
         primitives.Add(new Sphere(new Vector3(0, 0, 10), new Vector3(1, 0.5f, 1), 2));
         primitives.Add(new Sphere(new Vector3(5, 0, 10), new Vector3(0, 0, 1), 2));
         primitives.Add(new Plane(200, new Vector3(1, 1, 0), new Vector3(0, 0, -1)));
-        lights.Add(new Light(new Vector3(5, 5, 5), new Vector3(1, 1, 0.5f)));
+        lights.Add(new Light(new Vector3(0, 0, 5), new Vector3(1, 1, 1)));
         //lights.Add(new Light(new Vector3(5, 0, 2), new Vector3(0, 0, 1)));
     }
 

@@ -15,8 +15,9 @@ class Scene
         primitives.Add(new Sphere(new Vector3(-5, 0, 10), new Vector3(1, 0, 0.5f), 2));
         primitives.Add(new Sphere(new Vector3(0, 0, 10), new Vector3(1, 0.5f, 1), 2));
         primitives.Add(new Sphere(new Vector3(5, 0, 10), new Vector3(0, 0, 1), 2));
-        //primitives.Add(new Plane(10, new Vector3(1, 1, 0), new Vector3(0, -1, 0)));
-        lights.Add(new Light(new Vector3(0, 0, 5), new Vector3(1, 0, 1)));
+        primitives.Add(new Plane(200, new Vector3(1, 1, 0), new Vector3(0, 0, -1)));
+        lights.Add(new Light(new Vector3(5, 5, 5), new Vector3(1, 1, 0.5f)));
+        //lights.Add(new Light(new Vector3(5, 0, 2), new Vector3(0, 0, 1)));
     }
 
     public Intersection intersectScene(Ray ray)
@@ -48,20 +49,5 @@ class Scene
         }
 
         return nearestIntersect;
-    }
-
-    public Ray castShadowRay(Intersection intersection)
-    {
-        Vector3 shadowRayDir = (lights[0].position - intersection.intersectPoint).Normalized();
-        return new Ray(intersection.intersectPoint + 0.1f*-shadowRayDir, -shadowRayDir);
-    }
-
-    public Vector3 intersectShadowRay(Ray shadowRay, Light light)
-    {
-        double test = (lights[0].position - shadowRay.start).Length;
-        Intersection shadowRayIntersect = intersectScene(shadowRay);
-        if (shadowRayIntersect == null)
-            return Vector3.Zero;
-        else return (Vector3.Dot(shadowRayIntersect.intersectNorm, shadowRay.direction) * light.color);
     }
 }

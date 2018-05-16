@@ -9,23 +9,24 @@ class Raytracer
 {
     Ray ray;
     Ray shadowRay;
+    Scene scene;
     Intersection intersection;
-    Vector3 intersectionColor;
+    int intersectionColor;
     int scale = 20;
 
     public void Render(Camera c, Surface screen, Scene scene)
     {
+        this.scene = scene;
         Vector2 debugcpos = TranslateToDebug(c.position, screen);
         for (float y = 0; y < screen.height; y++)
             for (float x = 0; x < screen.width / 2; x++)
             {
                 ray = c.ShootRay(new Vector3((x * 2 / screen.width), (y / screen.height), 1));
-                intersection = scene.intersectScene(ray);
-                //intersection = scene.intersectScene(ray);
-                //intersectionColor = HandleRay(ray, scene);
-                if (intersection != null)
+                //try
+                {
                     screen.pixels[(int)x + (int)y * screen.width] = HandleRay(ray, scene);
-                else screen.pixels[(int)x + (int)y * screen.width] = 0;
+                }
+                //catch { screen.pixels[(int)x + (int)y * screen.width] = 0; }
 
                 if (y == 256 && x % 5 == 0)
                 {
@@ -43,15 +44,39 @@ class Raytracer
 
     public int HandleRay(Ray ray, Scene scene)
     {
-        intersectionColor = Vector3.Zero;
-        shadowRay = scene.castShadowRay(intersection);
+        intersection = scene.intersectScene(ray);
+        intersectionColor = CreateColor(DirectIllumination(intersection) * 255);
+        return intersectionColor;
+        //shadowRay = scene.castShadowRay(intersection);
+        //foreach (Light light in scene.lights)
+            //intersectionColor += (scene.intersectShadowRay(shadowRay, light, intersection) * intersection.color);
+        //return CreateColor(intersectionColor);
+    }
+
+    public Vector3 DirectIllumination(Intersection intersection)
+    {
+        Vector3 color = Vector3.Zero;
         foreach (Light light in scene.lights)
-            intersectionColor += (scene.intersectShadowRay(shadowRay, light) * intersection.color);
-        return CreateColor(intersectionColor);
+        {
+            float distance = (light.position - intersection.intersectPoint).Length;
+            float attenuation = 1 / (distance * distance);
+            Vector3 shadowRayDir = (light.position - intersection.intersectPoint).Normalized();
+            float NdotL = Vector3.Dot(intersection.intersectNorm, shadowRayDir);
+            if (!LightsourceVisible(intersection.intersectNorm, shadowRayDir)) color += Vector3.Zero;
+            else color += ((MathHelper.Clamp(NdotL, 0, 1) / attenuation) * light.color * intersection.color);
+        }
+        return color;
     }
 
     public int CreateColor(Vector3 color)
     {
         return (((int)color.X) * 255 << 16) + (((int)color.Y) * 255 << 8) + ((int)color.Z) * 255;
+    }
+
+    public bool LightsourceVisible(Vector3 N, Vector3 L)
+    {
+        if (Vector3.Dot(N, L) > 0)
+            return true;
+        return false;
     }
 }

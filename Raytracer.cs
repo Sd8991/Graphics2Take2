@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 class Raytracer
 {
     Ray ray;
+    Ray shadowRay;
     Intersection intersection;
+    Vector3 intersectionColor;
     int scale = 20;
 
     public void Render(Camera c, Surface screen, Scene scene)
@@ -17,9 +19,13 @@ class Raytracer
         for (float y = 0; y < screen.height; y++)
             for (float x = 0; x < screen.width / 2; x++)
             {
-                ray = c.ShootRay(new Vector3((x * 2 / screen.width), (y / screen.height), 1), x, y);
+                ray = c.ShootRay(new Vector3((x * 2 / screen.width), (y / screen.height), 1));
                 intersection = scene.intersectScene(ray);
-                screen.pixels[(int)x + (int)y * screen.width] = CreateColor(intersection.color);
+                //intersection = scene.intersectScene(ray);
+                //intersectionColor = HandleRay(ray, scene);
+                if (intersection != null)
+                    screen.pixels[(int)x + (int)y * screen.width] = HandleRay(ray, scene);
+                else screen.pixels[(int)x + (int)y * screen.width] = 0;
 
                 if (y == 256 && x % 5 == 0)
                 {
@@ -33,6 +39,15 @@ class Raytracer
     public Vector2 TranslateToDebug(Vector3 v, Surface screen)
     {
         return new Vector2(v.X * scale + 3 * screen.width / 4, -v.Z * scale + 3 * screen.height / 4);
+    }
+
+    public int HandleRay(Ray ray, Scene scene)
+    {
+        intersectionColor = Vector3.Zero;
+        shadowRay = scene.castShadowRay(intersection);
+        foreach (Light light in scene.lights)
+            intersectionColor += (scene.intersectShadowRay(shadowRay, light) * intersection.color);
+        return CreateColor(intersectionColor);
     }
 
     public int CreateColor(Vector3 color)

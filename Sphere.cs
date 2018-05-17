@@ -22,7 +22,6 @@ class Sphere : Primitive
         Vector3 c = position - ray.start;
         float t = Vector3.Dot(c, ray.direction);
         Vector3 q = c - t * ray.direction;
-        //q.Normalize();
         float pp = Vector3.Dot(q, q);
         if (pp > (radius * radius)) return null;
         t -= (float)Math.Sqrt((radius * radius) - pp);

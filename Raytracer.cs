@@ -18,6 +18,8 @@ class Raytracer
     {
         this.scene = scene;
         Vector2 debugcpos = TranslateToDebug(c.position, screen);
+        Vector2 screenleft = TranslateToDebug(c.leftUpperCorner, screen);
+        Vector2 screenright = TranslateToDebug(c.rightUpperCorner, screen);       
         foreach (Primitive s in scene.primitives)
             if (s.GetType() == typeof(Sphere)) DebugSphere((Sphere)s, screen); ;
         for (float y = 0; y < screen.height; y++)
@@ -30,13 +32,15 @@ class Raytracer
                 }
                 //catch { screen.pixels[(int)x + (int)y * screen.width] = 0; }
 
-                if (y == 256 && x % 5 == 0)
+                if (y == 256 && x % 25 == 0)
                 {
                     Vector3 intersectpoint = ray.start + ray.direction * (float)ray.distance;
                     Vector2 debugintersection = TranslateToDebug(intersectpoint, screen);
                     screen.Line((int)debugcpos.X, (int)debugcpos.Y, (int)debugintersection.X, (int)debugintersection.Y, (255 << 16) + (255 << 8));
                 }
             }
+        screen.Line((int)screenleft.X, (int)screenleft.Y, (int)screenright.X, (int)screenright.Y, CreateColor(new Vector3(1, 1, 1)));
+
     }
 
     public Vector2 TranslateToDebug(Vector3 v, Surface screen)
@@ -47,12 +51,13 @@ class Raytracer
     public int HandleRay(Ray ray, Scene scene)
     {
         intersection = scene.intersectScene(ray);
-        intersectionColor = CreateColor(DirectIllumination(intersection) * intersection.color * 255);
+        //intersectionColor = CreateColor(DirectIllumination(intersection)) * 255;
+        intersectionColor = CreateColor(intersection.color);
+        if (intersection.nearestPrimitive.GetType() == typeof(Sphere))
+        {
+            
+        }
         return intersectionColor;
-        //shadowRay = scene.castShadowRay(intersection);
-        //foreach (Light light in scene.lights)
-            //intersectionColor += (scene.intersectShadowRay(shadowRay, light, intersection) * intersection.color);
-        //return CreateColor(intersectionColor);
     }
 
     public Vector3 DirectIllumination(Intersection intersection)
@@ -65,14 +70,14 @@ class Raytracer
             Vector3 shadowRayDir = (light.position - intersection.intersectPoint).Normalized();
             float NdotL = Vector3.Dot(intersection.intersectNorm, shadowRayDir);
             if (!LightsourceVisible(intersection.intersectNorm, shadowRayDir)) color += Vector3.Zero;
-            else color += ((MathHelper.Clamp(NdotL, 0, 1) / attenuation) * light.color);
+            else color += ((MathHelper.Clamp(NdotL, 0, 1) * attenuation) * light.color * intersection.color);
         }
         return color;
     }
 
     public int CreateColor(Vector3 color)
     {
-        return ((Math.Min(255, (int)color.X) * 255) << 16) + ((Math.Min(255, (int)color.Y) * 255) << 8) + (Math.Min(255, (int)color.Z)) * 255;
+        return ((int)Math.Min(255, color.X * 255) << 16) + ((int)Math.Min(255, color.Y * 255) << 8) + ((int)Math.Min(255, color.Z * 255));
     }
 
     public void DebugSphere(Sphere s, Surface screen)

@@ -13,19 +13,22 @@ class Camera
     public Vector3 leftUpperCorner, rightUpperCorner, leftLowerCorner;
     public Vector3 screenHeight, screenWidth;
     public Vector3 Point;
+    public float fov;
 
-    public Camera(Vector3 position, Vector3 direction)
+    public Camera(Vector3 position, Vector3 direction, float fov)
     {
         this.position = position;
         this.direction = direction;
+        this.fov = fov;
         screenCenter = position + direction;
     }
 
     public void Screen()
     {
-        leftUpperCorner = screenCenter + new Vector3(-1, -1, 0);
-        rightUpperCorner = screenCenter + new Vector3(1, -1, 0);
-        leftLowerCorner = screenCenter + new Vector3(-1, 1, 0);
+        float width = ProcessFOV(fov);
+        leftUpperCorner = screenCenter + new Vector3(-width, -width, 0);
+        rightUpperCorner = screenCenter + new Vector3(width, -width, 0);
+        leftLowerCorner = screenCenter + new Vector3(-width, width, 0);
         screenHeight = leftLowerCorner- leftUpperCorner;
         screenWidth = rightUpperCorner - leftUpperCorner;
     }
@@ -37,4 +40,10 @@ class Camera
         rayDir.Normalize();
         return new Ray(position, rayDir);
     } 
+
+    public float ProcessFOV(float fov)
+    {
+        fov = fov / 360 * 2 * (float)Math.PI;
+        return (float)Math.Tan(fov / 2);
+    }
 }

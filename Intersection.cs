@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 class Intersection
 {
     public Primitive nearestPrimitive;
-    public double intersectDistance;
+    public float intersectDistance;
     public Vector3 intersectNorm;
     public Vector3 intersectPoint;
     public Vector3 color;

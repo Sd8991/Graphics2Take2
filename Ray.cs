@@ -9,7 +9,7 @@ public class Ray
 {
     public Vector3 start;
     public Vector3 direction;
-    public double distance;
+    public float distance;
 
     public Ray(Vector3 start, Vector3 direction)
     {

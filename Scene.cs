@@ -13,16 +13,23 @@ class Scene
     public Scene()
     {
         primitives.Add(new Sphere(new Vector3(-5, 0, 10), new Vector3(1f, 0, 0.5f), 2));
-        primitives.Add(new Sphere(new Vector3(-5, 5, 10), new Vector3(1f, 0.5f, 1f), 2));
-        primitives.Add(new Sphere(new Vector3(5, 0, 10), new Vector3(0, 0, 1f), 2));
-        primitives.Add(new Plane(20, new Vector3(1, 1, 0), new Vector3(0, 0, -1)));
-        lights.Add(new Light(new Vector3(-6, 0, 1), new Vector3(1f, 1f, 1f)));
+        //primitives.Add(new Sphere(new Vector3(0, 0, 5), new Vector3(1f, 0.5f, 1f), 0.5f));
+        primitives.Add(new Sphere(new Vector3(5, 0, 10), new Vector3(1, 1, 1), 2, "mirror"));
+        primitives.Add(new Plane(20, new Vector3(1, 1, 0), new Vector3(0, 0, -1))); //back
+        primitives.Add(new Plane(2, new Vector3(1, 1, 1), new Vector3(0, -1, 0))); //floor
+        primitives.Add(new Plane(10, new Vector3(1, 0, 1), new Vector3(0, 1, 0))); //ceiling
+        primitives.Add(new Plane(10, new Vector3(0, 1, 1), new Vector3(1, 0, 0))); //left
+        primitives.Add(new Plane(10, new Vector3(1, 0, 0), new Vector3(-1, 0, 0))); //right
+        primitives.Add(new Plane(2, new Vector3(1, 1, 1), new Vector3(0, 0, 1))); //behind
+        //lights.Add(new Light(new Vector3(-6, 0, 1), new Vector3(1f, 1f, 1f)));
+        lights.Add(new Light(new Vector3(0, -1, 5), new Vector3(0.6f, 0.6f, 0.6f)));
         //lights.Add(new Light(new Vector3(5, 0, 2), new Vector3(0, 0, 1)));
     }
 
-    public Intersection intersectScene(Ray ray)
+    public Intersection intersectScene(Ray ray, float maxDis = float.PositiveInfinity)
     {
-        double nearestIntersectDist = double.PositiveInfinity;
+        float minDis = 0.1f;
+        float nearestIntersectDist = maxDis;
         Intersection nearestIntersect = null;
 
         foreach (Primitive p in primitives)
@@ -32,16 +39,16 @@ class Scene
             if (p is Sphere)
             {
                 Sphere sphere = (Sphere)p;
-                currentIntersect = sphere.Intersect(ray);
+                currentIntersect = sphere.IntersectSphere(ray);
             }
 
             if (p is Plane)
             {
                 Plane plane = (Plane)p;
-                currentIntersect = plane.Intersect(ray);
+                currentIntersect = plane.IntersectPlane(ray);
             }
 
-            if (currentIntersect != null && currentIntersect.intersectDistance < nearestIntersectDist)
+            if (currentIntersect != null && currentIntersect.intersectDistance < nearestIntersectDist && currentIntersect.intersectDistance > minDis)
             {
                 nearestIntersect = currentIntersect;
                 nearestIntersectDist = currentIntersect.intersectDistance;

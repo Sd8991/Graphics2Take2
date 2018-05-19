@@ -10,13 +10,13 @@ class Plane : Primitive
     public Vector3 normal;
     public float distance;
 
-    public Plane(float distance, Vector3 color, Vector3 normal) : base(color)
+    public Plane(float distance, Vector3 color, Vector3 normal, string type = "normal") : base(color, type)
     {
         this.normal = normal;
         this.distance = distance;
     }
 
-    public override Intersection Intersect(Ray ray)
+    public Intersection IntersectPlane(Ray ray)
     {
         float t = -(Vector3.Dot(ray.start, normal) + distance) / (Vector3.Dot(ray.direction, normal));
         ray.distance = t;

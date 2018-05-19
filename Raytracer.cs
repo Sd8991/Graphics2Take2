@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 class Raytracer
 {
     Ray ray;
-    Ray shadowRay;
+    public Ray shadowRay;
     Scene scene;
     Intersection intersection;
     int intersectionColor;
@@ -25,7 +25,7 @@ class Raytracer
         for (float y = 0; y < screen.height; y++)
             for (float x = 0; x < screen.width / 2; x++)
             {
-                ray = c.ShootRay(new Vector3((x * 2 / screen.width), (y / screen.height), 1));
+                ray = c.ShootRay(new Vector3((x * 2 / screen.width), (y * 1 / screen.height), 1));
                 //try
                 {
                     screen.pixels[(int)x + (int)y * screen.width] = HandleRay(ray, scene);
@@ -51,13 +51,12 @@ class Raytracer
     public int HandleRay(Ray ray, Scene scene)
     {
         intersection = scene.intersectScene(ray);
-        //intersectionColor = CreateColor(DirectIllumination(intersection)) * 255;
-        intersectionColor = CreateColor(intersection.color);
-        if (intersection.nearestPrimitive.GetType() == typeof(Sphere))
+        switch (intersection.nearestPrimitive.type)
         {
-            
+            case "normal": return CreateColor(DirectIllumination(intersection) * 255);
+            case "mirror": return CreateColor(intersection.color) * HandleRay(Reflect(ray, intersection), scene); 
         }
-        return intersectionColor;
+        return 0;
     }
 
     public Vector3 DirectIllumination(Intersection intersection)
@@ -66,11 +65,19 @@ class Raytracer
         foreach (Light light in scene.lights)
         {
             float distance = (light.position - intersection.intersectPoint).Length;
-            float attenuation = 1 / (distance * distance);
             Vector3 shadowRayDir = (light.position - intersection.intersectPoint).Normalized();
-            float NdotL = Vector3.Dot(intersection.intersectNorm, shadowRayDir);
             if (!LightsourceVisible(intersection.intersectNorm, shadowRayDir)) color += Vector3.Zero;
-            else color += ((MathHelper.Clamp(NdotL, 0, 1) * attenuation) * light.color * intersection.color);
+            else//First check if lightsource is reachable
+            {
+                bool isLighted = CastShadowRay(intersection, shadowRayDir, distance);
+                if (isLighted)
+                {
+                    float NdotL = Vector3.Dot(intersection.intersectNorm, shadowRayDir);
+                    float attenuation = 1 / (distance * distance);
+                    color += (MathHelper.Clamp(NdotL, 0, 1) * attenuation * light.color * intersection.color);
+                }
+                else color += Vector3.Zero;
+            }
         }
         return color;
     }
@@ -94,8 +101,25 @@ class Raytracer
 
     public bool LightsourceVisible(Vector3 N, Vector3 L)
     {
-        if (Vector3.Dot(N, L) > 0)
+        if (Vector3.Dot(N, L) >= 0)
             return true;
         return false;
+    }
+
+    public bool CastShadowRay(Intersection i, Vector3 dir, float dis)
+    {
+        shadowRay = new Ray(i.intersectPoint, dir);
+        if (i.nearestPrimitive.GetType()== typeof(Sphere))
+        { }
+        Intersection shadowIntersect = scene.intersectScene(shadowRay, dis);
+        if (shadowIntersect == null)
+            return true;
+        return false;
+    }
+
+    public Ray Reflect(Ray ray, Intersection i)
+    {
+        Vector3 newRayDir = (ray.direction - 2 * i.intersectNorm * (Vector3.Dot(ray.direction, i.intersectNorm))).Normalized();
+        return new Ray(i.intersectPoint + 0.1f * newRayDir, newRayDir);
     }
 }

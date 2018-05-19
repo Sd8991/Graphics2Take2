@@ -11,13 +11,13 @@ class Sphere : Primitive
     public Vector3 position;
     public Vector3 normal;
 
-    public Sphere(Vector3 position, Vector3 color, float radius) : base(color)
+    public Sphere(Vector3 position, Vector3 color, float radius, string type = "normal") : base(color, type)
     {
         this.radius = radius;
         this.position = position;
     }
 
-    public override Intersection Intersect(Ray ray)
+    public Intersection IntersectSphere(Ray ray)
     {
         Vector3 c = position - ray.start;
         float t = Vector3.Dot(c, ray.direction);

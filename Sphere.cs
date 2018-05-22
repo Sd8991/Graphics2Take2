@@ -11,7 +11,7 @@ class Sphere : Primitive
     public Vector3 position;
     public Vector3 normal;
 
-    public Sphere(Vector3 position, Vector3 color, float radius, string type = "normal") : base(color, type)
+    public Sphere(Vector3 position, Vector3 color, float radius, string type = "normal", bool isTextured = false) : base(color, type, isTextured)
     {
         this.radius = radius;
         this.position = position;

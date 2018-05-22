@@ -10,7 +10,7 @@ class Plane : Primitive
     public Vector3 normal;
     public float distance;
 
-    public Plane(float distance, Vector3 color, Vector3 normal, string type = "normal") : base(color, type)
+    public Plane(float distance, Vector3 color, Vector3 normal, bool isTextured = false, string type = "normal") : base(color, type, isTextured)
     {
         this.normal = normal;
         this.distance = distance;

@@ -11,7 +11,6 @@ class Raytracer
     public Ray shadowRay;
     Scene scene;
     Intersection intersection;
-    int intersectionColor;
     int scale = 20;
 
     public void Render(Camera c, Surface screen, Scene scene)
@@ -26,11 +25,11 @@ class Raytracer
             for (float x = 0; x < screen.width / 2; x++)
             {
                 ray = c.ShootRay(new Vector3((x * 2 / screen.width), (y * 1 / screen.height), 1));
-                //try
+                try
                 {
                     screen.pixels[(int)x + (int)y * screen.width] = HandleRay(ray, scene);
                 }
-                //catch { screen.pixels[(int)x + (int)y * screen.width] = 0; }
+                catch { screen.pixels[(int)x + (int)y * screen.width] = 0; }
 
                 if (y == 256 && x % 25 == 0)
                 {
@@ -51,10 +50,21 @@ class Raytracer
     public int HandleRay(Ray ray, Scene scene)
     {
         intersection = scene.intersectScene(ray);
-        switch (intersection.nearestPrimitive.type)
+        if (intersection != null)
         {
-            case "normal": return CreateColor(DirectIllumination(intersection) * 255);
-            case "mirror": return CreateColor(intersection.color) * HandleRay(Reflect(ray, intersection), scene); 
+            switch (intersection.nearestPrimitive.type)
+            {
+                case "normal":
+                    {
+                        if (intersection.nearestPrimitive.GetType() == typeof(Plane) && intersection.nearestPrimitive.isTextured)
+                        {
+                            return CreateColor(DirectIllumination(intersection) * 255) * TexturePlane(intersection);
+                        }
+                        return CreateColor(DirectIllumination(intersection) * 255);
+                    }
+                case "mirror": return HandleRay(Reflect(ray, intersection), scene);
+            }
+            return 0;
         }
         return 0;
     }
@@ -111,7 +121,7 @@ class Raytracer
         shadowRay = new Ray(i.intersectPoint, dir);
         if (i.nearestPrimitive.GetType()== typeof(Sphere))
         { }
-        Intersection shadowIntersect = scene.intersectScene(shadowRay, dis);
+        Intersection shadowIntersect = scene.intersectScene(shadowRay, dis -( 0.2f * dir.Length));
         if (shadowIntersect == null)
             return true;
         return false;
@@ -121,5 +131,14 @@ class Raytracer
     {
         Vector3 newRayDir = (ray.direction - 2 * i.intersectNorm * (Vector3.Dot(ray.direction, i.intersectNorm))).Normalized();
         return new Ray(i.intersectPoint + 0.1f * newRayDir, newRayDir);
+    }
+
+    public int TexturePlane(Intersection i)
+    {
+        Vector3 u = new Vector3(1, 0, 0);
+        Vector3 v = new Vector3(0, 0, 1);
+        float lambda1 = i.intersectPoint.X;
+        float lambda2 = i.intersectPoint.Z;
+        return ((int)(2 * lambda1) + (int)lambda2) & 1;
     }
 }

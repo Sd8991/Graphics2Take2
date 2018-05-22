@@ -10,12 +10,15 @@ class Raytracer
     Ray ray;
     public Ray shadowRay;
     Scene scene;
+    Application a = new Application();
     Intersection intersection;
     int scale = 20;
 
     public void Render(Camera c, Surface screen, Scene scene)
     {
         this.scene = scene;
+        a.moveCamera(c);
+        a.rotateCamera(c);
         Vector2 debugcpos = TranslateToDebug(c.position, screen);
         Vector2 screenleft = TranslateToDebug(c.leftUpperCorner, screen);
         Vector2 screenright = TranslateToDebug(c.rightUpperCorner, screen);       

@@ -26,9 +26,9 @@ class Camera
     public void Screen()
     {
         float width = ProcessFOV(fov);
-        leftUpperCorner = screenCenter + new Vector3(-width, -width, 0);
-        rightUpperCorner = screenCenter + new Vector3(width, -width, 0);
-        leftLowerCorner = screenCenter + new Vector3(-width, width, 0);
+        leftUpperCorner = screenCenter + new Vector3(-width * direction.Z, -width, width * direction.X);
+        rightUpperCorner = screenCenter + new Vector3(width * direction.Z, -width, -width * direction.X);
+        leftLowerCorner = screenCenter + new Vector3(-width * direction.Z, width, width * direction.X);
         screenHeight = leftLowerCorner- leftUpperCorner;
         screenWidth = rightUpperCorner - leftUpperCorner;
     }

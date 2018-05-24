@@ -19,7 +19,10 @@ class Plane : Primitive
     public Intersection IntersectPlane(Ray ray)
     {
         float t = -(Vector3.Dot(ray.start, normal) + distance) / (Vector3.Dot(ray.direction, normal));
-        ray.distance = t;
+        if ((t < ray.distance) && (t > 0))
+        {
+            ray.distance = t;
+        }
         return new Intersection(ray, this, normal);
     }
 }

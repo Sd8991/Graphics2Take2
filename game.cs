@@ -10,6 +10,8 @@ class Game
     public static Camera c;
     public Scene s;
     Application a;
+    int moveFactor = 1;
+
     // initialize
     public void Init()
     {
@@ -23,8 +25,9 @@ class Game
     public void Tick()
     {
         screen.Clear(0);
-        a.moveCamera(c);
-        a.rotateCamera(c);
-        rayTracer.Render(c, screen, s);
+        moveFactor = 1;
+        a.moveCamera(c, ref moveFactor);
+        a.rotateCamera(c, ref moveFactor);
+        rayTracer.Render(c, screen, s, moveFactor);
     }
 }

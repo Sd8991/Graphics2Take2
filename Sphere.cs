@@ -33,4 +33,21 @@ class Sphere : Primitive
         normal.Normalize();
         return new Intersection(ray, this, normal);
     }
+
+    public Intersection IntersectInnerSphere(Ray ray)
+    {
+        float a = 1;
+        float b = 2 * Vector3.Dot(ray.direction, (ray.start - position));
+        float c = Vector3.Dot((ray.start - position), (ray.start - position)) - (radius * radius);
+        float divider = 1 / 2 * a;
+        float t = (float)(-b + Math.Sqrt((b * b) - 4 * a * c)) * divider;
+        if (t < 0.1)
+            t = (float)(-b - Math.Sqrt((b * b) - 4 * a * c)) * divider;
+        ray.distance = t;
+        normal = ((ray.start + ray.direction * (float)ray.distance) - position);
+        if (Vector3.Dot(normal, ray.direction) > 0) normal = -normal;
+        normal.Normalize();
+        return new Intersection(ray, this, normal);
+        //recursion++;
+    }
 }

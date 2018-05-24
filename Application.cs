@@ -10,7 +10,7 @@ class Application
 {
     public Application() { }
 
-    public void moveCamera(Camera c)
+    public void moveCamera(Camera c, ref int moveFactor)
     {
         var keyboard = OpenTK.Input.Keyboard.GetState();
         Vector3 currPos = c.position;
@@ -20,10 +20,10 @@ class Application
         if (keyboard[OpenTK.Input.Key.D]) c.position += new Vector3(c.direction.Z, 0, -c.direction.X).Normalized() / 10;//right (not based on dir yet)
         if (keyboard[OpenTK.Input.Key.Space]) c.position += new Vector3(0, 0.1f, 0);//up
         if (keyboard[OpenTK.Input.Key.ShiftLeft]) c.position += new Vector3(0, -0.1f, 0);//down
-        if (c.position != currPos) adjustScreen(c);
+        if (c.position != currPos) adjustScreen(c, ref moveFactor);
     }
 
-    public void rotateCamera(Camera c)
+    public void rotateCamera(Camera c, ref int moveFactor)
     {
         var keyboard = OpenTK.Input.Keyboard.GetState();
         Vector3 currDir = c.direction;
@@ -32,13 +32,14 @@ class Application
         if (keyboard[OpenTK.Input.Key.Left]) rotateNormal = new Vector3(-c.direction.Z, 0, c.direction.X).Normalized() / 10; //left
 
         if (rotateNormal != Vector3.Zero) c.direction = (c.direction + rotateNormal).Normalized();
-        if (c.direction != currDir) adjustScreen(c);
+        if (c.direction != currDir) adjustScreen(c, ref moveFactor);
     }
 
-    public void adjustScreen(Camera c)
+    public void adjustScreen(Camera c, ref int moveFactor)
     {
         c.screenCenter = c.position + c.direction;
         c.Screen();
+        moveFactor = 2;
     }
 
 

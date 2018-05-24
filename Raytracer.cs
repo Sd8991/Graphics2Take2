@@ -14,7 +14,7 @@ class Raytracer
     int scale = 20;
     int recursion;
 
-    public void Render(Camera c, Surface screen, Scene scene)
+    public void Render(Camera c, Surface screen, Scene scene, int mF)
     {
         this.scene = scene;
         Vector2 debugcpos = TranslateToDebug(c.position, screen);
@@ -22,14 +22,14 @@ class Raytracer
         Vector2 screenright = TranslateToDebug(c.rightUpperCorner, screen);       
         foreach (Primitive s in scene.primitives)
             if (s.GetType() == typeof(Sphere)) DebugSphere((Sphere)s, screen); ;
-        for (float y = 0; y < screen.height; y++)
-            for (float x = 0; x < screen.width / 2; x++)
+        for (float y = 0; y < screen.height; y = y + mF)
+            for (float x = 0; x < screen.width / 2; x = x + mF)
             {
                 ray = c.ShootRay(new Vector3((x * 2 / screen.width), (y * 1 / screen.height), 1));
                 try
                 {
                     recursion = 0;
-                    screen.pixels[(int)x + (int)y * screen.width] = CreateColor(HandleRay(ray, scene));
+                    screen.pixels[(int)x + (int)y * screen.width] = CreateColor(HandleRay(ray, scene, 0));
                 }
                 catch { screen.pixels[(int)x + (int)y * screen.width] = 0; }
 
@@ -49,30 +49,33 @@ class Raytracer
         return new Vector2(v.X * scale + 3 * screen.width / 4, -v.Z * scale + 3 * screen.height / 4);
     }
 
-    public Vector3 HandleRay(Ray ray, Scene scene)
+    public Vector3 HandleRay(Ray ray, Scene scene, int recursion, bool refracIntersect = false)
     {
         intersection = scene.intersectScene(ray);
         if (intersection != null)
         {
-            switch (intersection.nearestPrimitive.type)
+            if (recursion < 10)
             {
-                case "normal":
-                    {
-                        if (intersection.nearestPrimitive.GetType() == typeof(Plane) && intersection.nearestPrimitive.isTextured)
+                switch (intersection.nearestPrimitive.type)
+                {
+                    case "normal":
                         {
-                            return DirectIllumination(intersection) * 255 * TexturePlane(intersection);
+                            if (intersection.nearestPrimitive.GetType() == typeof(Plane) && intersection.nearestPrimitive.isTextured)
+                            {
+                                return DirectIllumination(intersection) * 255 * TexturePlane(intersection);
+                            }
+                            return DirectIllumination(intersection) * 255;
                         }
-                        return DirectIllumination(intersection) * 255;
-                    }
-                case "mirror": return HandleRay(Reflect(ray, intersection), scene);
-                case "partial": return (0.5f * DirectIllumination(intersection) * 255) + (0.5f * HandleRay(Reflect(ray, intersection), scene));
-                case "dielectric":
-                    {
-                        float n1 = 1; float n2 = 1.6f;
-                        float R0 = (float)Math.Pow(((n1 - n2) / (n1 + n2)), 2);
-                        float f = R0 + (1 - R0) * (1 - Vector3.Dot(intersection.intersectNorm, ray.direction)); 
-                        return (f * HandleRay(Reflect(ray, intersection), scene) + (1-f) * HandleRay(Refract(ray, intersection, recursion, n1, n2), scene));
-                    }
+                    case "mirror": return HandleRay(Reflect(ray, intersection), scene, recursion++);
+                    case "partial": return (0.5f * DirectIllumination(intersection) * 255) + (0.5f * HandleRay(Reflect(ray, intersection), scene, recursion++));
+                    case "dielectric":
+                        {
+                            float n1 = 1; float n2 = 1.6f;
+                            float R0 = (float)Math.Pow(((n1 - n2) / (n1 + n2)), 2);
+                            float f = R0 + (1 - R0) * (float)Math.Pow((1 - Vector3.Dot(intersection.intersectNorm, ray.direction)), 5);
+                            return (f * HandleRay(Reflect(ray, intersection), scene, recursion++) + (1 - f) * HandleRay(Refract(ray, intersection, n1, n2), scene, recursion++, true));
+                        }
+                }
             }
             return Vector3.Zero;
         }
@@ -143,15 +146,15 @@ class Raytracer
         return new Ray(i.intersectPoint + 0.1f * newRayDir, newRayDir);
     }
 
-    public Ray Refract(Ray ray, Intersection i, int r, float n1, float n2)
+    public Ray Refract(Ray ray, Intersection i, float n1, float n2)
     {
         float Ai = Vector3.Dot(ray.direction, intersection.intersectNorm) / (ray.direction.Length * intersection.intersectNorm.Length);
         float k = 1 - (((n1 / n2) * (n1 / n2)) * (1 - (Ai * Ai)));
-        r++;
         if (k >= 0)
         {
             float sumfin = (float)((n1 / n2) * Ai - Math.Sqrt(k));
-            return new Ray(i.intersectPoint, (n1 / n2) * ray.direction + i.intersectNorm * (sumfin));
+            Vector3 newRayDir = ((n1 / n2) * ray.direction + i.intersectNorm * (sumfin)).Normalized();
+            return new Ray(i.intersectPoint + 0.1f * newRayDir, newRayDir);
         }
         return null;
     }

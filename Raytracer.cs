@@ -12,6 +12,7 @@ class Raytracer
     Scene scene;
     Intersection intersection;
     int scale = 20;
+    int recursion;
 
     public void Render(Camera c, Surface screen, Scene scene)
     {
@@ -27,7 +28,8 @@ class Raytracer
                 ray = c.ShootRay(new Vector3((x * 2 / screen.width), (y * 1 / screen.height), 1));
                 try
                 {
-                    screen.pixels[(int)x + (int)y * screen.width] = HandleRay(ray, scene);
+                    recursion = 0;
+                    screen.pixels[(int)x + (int)y * screen.width] = CreateColor(HandleRay(ray, scene));
                 }
                 catch { screen.pixels[(int)x + (int)y * screen.width] = 0; }
 
@@ -47,7 +49,7 @@ class Raytracer
         return new Vector2(v.X * scale + 3 * screen.width / 4, -v.Z * scale + 3 * screen.height / 4);
     }
 
-    public int HandleRay(Ray ray, Scene scene)
+    public Vector3 HandleRay(Ray ray, Scene scene)
     {
         intersection = scene.intersectScene(ray);
         if (intersection != null)
@@ -58,15 +60,23 @@ class Raytracer
                     {
                         if (intersection.nearestPrimitive.GetType() == typeof(Plane) && intersection.nearestPrimitive.isTextured)
                         {
-                            return CreateColor(DirectIllumination(intersection) * 255) * TexturePlane(intersection);
+                            return DirectIllumination(intersection) * 255 * TexturePlane(intersection);
                         }
-                        return CreateColor(DirectIllumination(intersection) * 255);
+                        return DirectIllumination(intersection) * 255;
                     }
                 case "mirror": return HandleRay(Reflect(ray, intersection), scene);
+                case "partial": return (0.5f * DirectIllumination(intersection) * 255) + (0.5f * HandleRay(Reflect(ray, intersection), scene));
+                case "dielectric":
+                    {
+                        float n1 = 1; float n2 = 1.6f;
+                        float R0 = (float)Math.Pow(((n1 - n2) / (n1 + n2)), 2);
+                        float f = R0 + (1 - R0) * (1 - Vector3.Dot(intersection.intersectNorm, ray.direction)); 
+                        return (f * HandleRay(Reflect(ray, intersection), scene) + (1-f) * HandleRay(Refract(ray, intersection, recursion, n1, n2), scene));
+                    }
             }
-            return 0;
+            return Vector3.Zero;
         }
-        return 0;
+        return Vector3.Zero;
     }
 
     public Vector3 DirectIllumination(Intersection intersection)
@@ -131,6 +141,19 @@ class Raytracer
     {
         Vector3 newRayDir = (ray.direction - 2 * i.intersectNorm * (Vector3.Dot(ray.direction, i.intersectNorm))).Normalized();
         return new Ray(i.intersectPoint + 0.1f * newRayDir, newRayDir);
+    }
+
+    public Ray Refract(Ray ray, Intersection i, int r, float n1, float n2)
+    {
+        float Ai = Vector3.Dot(ray.direction, intersection.intersectNorm) / (ray.direction.Length * intersection.intersectNorm.Length);
+        float k = 1 - (((n1 / n2) * (n1 / n2)) * (1 - (Ai * Ai)));
+        r++;
+        if (k >= 0)
+        {
+            float sumfin = (float)((n1 / n2) * Ai - Math.Sqrt(k));
+            return new Ray(i.intersectPoint, (n1 / n2) * ray.direction + i.intersectNorm * (sumfin));
+        }
+        return null;
     }
 
     public int TexturePlane(Intersection i)

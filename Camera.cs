@@ -46,4 +46,9 @@ class Camera
         fov = fov / 360 * 2 * (float)Math.PI;
         return (float)Math.Tan(fov / 2);
     }
+
+    public Vector3 ProcessTarget(Vector3 target)
+    {
+        return (target - position).Normalized();
+    }
 }

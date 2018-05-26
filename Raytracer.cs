@@ -11,11 +11,13 @@ class Raytracer
     public Ray shadowRay;
     Scene scene;
     Intersection intersection;
+    Camera c;
     int scale = 20;
-    int recursion;
+    public int recursion = 0;
 
     public void Render(Camera c, Surface screen, Scene scene, int mF)
     {
+        this.c = c;
         this.scene = scene;
         Vector2 debugcpos = TranslateToDebug(c.position, screen);
         Vector2 screenleft = TranslateToDebug(c.leftUpperCorner, screen);
@@ -29,7 +31,7 @@ class Raytracer
                 try
                 {
                     recursion = 0;
-                    screen.pixels[(int)x + (int)y * screen.width] = CreateColor(HandleRay(ray, scene, 0));
+                    screen.pixels[(int)x + (int)y * screen.width] = CreateColor(HandleRay(ray, scene, recursion));
                 }
                 catch { screen.pixels[(int)x + (int)y * screen.width] = 0; }
 
@@ -51,10 +53,10 @@ class Raytracer
 
     public Vector3 HandleRay(Ray ray, Scene scene, int recursion, bool refracIntersect = false)
     {
-        intersection = scene.intersectScene(ray);
+        intersection = scene.intersectScene(ray, refracIntersect);
         if (intersection != null)
         {
-            if (recursion < 10)
+            if (recursion < 4)
             {
                 switch (intersection.nearestPrimitive.type)
                 {
@@ -66,18 +68,20 @@ class Raytracer
                             }
                             return DirectIllumination(intersection) * 255;
                         }
-                    case "mirror": return HandleRay(Reflect(ray, intersection), scene, recursion++);
-                    case "partial": return (0.5f * DirectIllumination(intersection) * 255) + (0.5f * HandleRay(Reflect(ray, intersection), scene, recursion++));
+                    case "mirror": return HandleRay(Reflect(ray, intersection), scene, recursion++, refracIntersect);
+                    case "partial": return (0.5f * DirectIllumination(intersection) * 255) + (0.5f * HandleRay(Reflect(ray, intersection), scene, recursion+1, refracIntersect));
                     case "dielectric":
                         {
                             float n1 = 1; float n2 = 1.6f;
-                            float R0 = (float)Math.Pow(((n1 - n2) / (n1 + n2)), 2);
-                            float f = R0 + (1 - R0) * (float)Math.Pow((1 - Vector3.Dot(intersection.intersectNorm, ray.direction)), 5);
-                            return (f * HandleRay(Reflect(ray, intersection), scene, recursion++) + (1 - f) * HandleRay(Refract(ray, intersection, n1, n2), scene, recursion++, true));
+                            float R0 = (float)Math.Pow(((n2 - n1) / (n2 + n1)), 2);
+                            float pretest = Vector3.Dot(ray.direction, -intersection.intersectNorm) / (intersection.intersectNorm.Length * ray.direction.Length);
+                            float test = (float)Math.Pow((1 - pretest) , 5);
+                            float f = R0 + (1 - R0) * test;
+                            return (f * HandleRay(Reflect(ray, intersection), scene, recursion+1, false) + (1 - f) * HandleRay(Refract(ray, intersection, n1, n2), scene, recursion+1, true));
                         }
                 }
             }
-            return Vector3.Zero;
+            //return Vector3.Zero;
         }
         return Vector3.Zero;
     }
@@ -87,6 +91,8 @@ class Raytracer
         Vector3 color = Vector3.Zero;
         foreach (Light light in scene.lights)
         {
+            Vector3 reflect = ((intersection.intersectPoint - light.position) - 2 * Vector3.Dot((intersection.intersectPoint - light.position), intersection.intersectNorm) * intersection.intersectNorm).Normalized();
+            float energy = Vector3.Dot((c.position - intersection.intersectPoint), reflect);
             float distance = (light.position - intersection.intersectPoint).Length;
             Vector3 shadowRayDir = (light.position - intersection.intersectPoint).Normalized();
             if (!LightsourceVisible(intersection.intersectNorm, shadowRayDir)) color += Vector3.Zero;
@@ -97,12 +103,17 @@ class Raytracer
                 {
                     float NdotL = Vector3.Dot(intersection.intersectNorm, shadowRayDir);
                     float attenuation = 1 / (distance * distance);
-                    color += (MathHelper.Clamp(NdotL, 0, 1) * attenuation * light.color * intersection.color);
+                    color += (MathHelper.Clamp(NdotL, 0, 1) * attenuation * light.color * intersection.color * (float)(Math.Pow(energy, intersection.specularity) / energy));
                 }
                 else color += Vector3.Zero;
             }
         }
         return color;
+    }
+
+    public Vector3 GlossyIllumination(Ray ray, Intersection intersection)
+    {
+        return Vector3.Zero;
     }
 
     public int CreateColor(Vector3 color)
@@ -134,7 +145,7 @@ class Raytracer
         shadowRay = new Ray(i.intersectPoint, dir);
         if (i.nearestPrimitive.GetType()== typeof(Sphere))
         { }
-        Intersection shadowIntersect = scene.intersectScene(shadowRay, dis -( 0.2f * dir.Length));
+        Intersection shadowIntersect = scene.intersectScene(shadowRay, false, dis -( 0.2f * dir.Length));
         if (shadowIntersect == null)
             return true;
         return false;
@@ -156,7 +167,7 @@ class Raytracer
             Vector3 newRayDir = ((n1 / n2) * ray.direction + i.intersectNorm * (sumfin)).Normalized();
             return new Ray(i.intersectPoint + 0.1f * newRayDir, newRayDir);
         }
-        return null;
+        return Reflect(ray, i);
     }
 
     public int TexturePlane(Intersection i)

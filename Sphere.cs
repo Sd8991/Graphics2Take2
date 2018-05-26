@@ -11,7 +11,7 @@ class Sphere : Primitive
     public Vector3 position;
     public Vector3 normal;
 
-    public Sphere(Vector3 position, Vector3 color, float radius, string type = "normal", bool isTextured = false) : base(color, type, isTextured)
+    public Sphere(Vector3 position, Vector3 color, float radius, string type, float specularity = 1, bool isTextured = false) : base(color, type, specularity, isTextured)
     {
         this.radius = radius;
         this.position = position;
@@ -36,18 +36,20 @@ class Sphere : Primitive
 
     public Intersection IntersectInnerSphere(Ray ray)
     {
+        float t = 0;
         float a = 1;
-        float b = 2 * Vector3.Dot(ray.direction, (ray.start - position));
+        float b = Vector3.Dot(2 * ray.direction, -(ray.start - position));
         float c = Vector3.Dot((ray.start - position), (ray.start - position)) - (radius * radius);
-        float divider = 1 / 2 * a;
-        float t = (float)(-b + Math.Sqrt((b * b) - 4 * a * c)) * divider;
+        float divider = 1 / (2 * a);
+        float sqrt = (b * b) - 4 * a * c;
+        if (sqrt > 0)
+            t = (float)(-b - (float)Math.Sqrt(sqrt) * divider);
+        else return null;
         if (t < 0.1)
-            t = (float)(-b - Math.Sqrt((b * b) - 4 * a * c)) * divider;
+            t = (float)(-b + Math.Sqrt(sqrt) * divider);
         ray.distance = t;
-        normal = ((ray.start + ray.direction * (float)ray.distance) - position);
+        normal = ((ray.start + ray.direction * (float)ray.distance) - position).Normalized();
         if (Vector3.Dot(normal, ray.direction) > 0) normal = -normal;
-        normal.Normalize();
         return new Intersection(ray, this, normal);
-        //recursion++;
     }
 }

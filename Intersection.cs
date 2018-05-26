@@ -12,6 +12,7 @@ class Intersection
     public Vector3 intersectNorm;
     public Vector3 intersectPoint;
     public Vector3 color;
+    public float specularity;
 
     public Intersection(Ray ray, Primitive primitive, Vector3 normal)
     {
@@ -20,5 +21,6 @@ class Intersection
         intersectPoint = ray.start + (float)intersectDistance * ray.direction;
         intersectNorm = normal;
         color = primitive.color;
+        specularity = primitive.specularity;
     }
 }

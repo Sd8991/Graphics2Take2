@@ -12,9 +12,9 @@ class Scene
 
     public Scene()
     {
-        primitives.Add(new Sphere(new Vector3(3, -0.5f, 7), new Vector3(0f, 1, 0.5f), 1, "partial"));
-        primitives.Add(new Sphere(new Vector3(0, -0.5f, 7), new Vector3(0.5f, 0.5f, 0.5f), 1, "dielectric"));
-        primitives.Add(new Sphere(new Vector3(-3, -0.5f, 7), new Vector3(1, 1, 1), 1, "mirror"));
+        primitives.Add(new Sphere(new Vector3(3, 0, 7), new Vector3(0f, 1, 0.5f), 1, "partial"));
+        primitives.Add(new Sphere(new Vector3(0, 0, 7), new Vector3(0.5f, 0.5f, 0.5f), 1, "normal"));
+        primitives.Add(new Sphere(new Vector3(-3, 0, 7), new Vector3(1, 1, 1), 1, "mirror"));
         primitives.Add(new Plane(20, new Vector3(1, 1, 0), new Vector3(0, 0, -1))); //back
         primitives.Add(new Plane(1, new Vector3(1, 1, 1), new Vector3(0, -1, 0), true)); //floor
         primitives.Add(new Plane(10, new Vector3(1, 0, 1), new Vector3(0, 1, 0))); //ceiling

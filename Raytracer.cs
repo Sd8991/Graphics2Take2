@@ -10,13 +10,16 @@ class Raytracer
     Ray ray;
     public Ray shadowRay;
     Scene scene;
+    Surface screen;
     Intersection intersection;
+    List<Vector2> debugReflections;
     int scale = 20;
     int recursion;
 
     public void Render(Camera c, Surface screen, Scene scene, int mF)
     {
         this.scene = scene;
+        this.screen = screen;
         Vector2 debugcpos = TranslateToDebug(c.position, screen);
         Vector2 screenleft = TranslateToDebug(c.leftUpperCorner, screen);
         Vector2 screenright = TranslateToDebug(c.rightUpperCorner, screen);       
@@ -29,6 +32,7 @@ class Raytracer
                 try
                 {
                     recursion = 0;
+                    debugReflections = new List<Vector2>();
                     screen.pixels[(int)x + (int)y * screen.width] = CreateColor(HandleRay(ray, scene, 0));
                 }
                 catch { screen.pixels[(int)x + (int)y * screen.width] = 0; }
@@ -38,6 +42,13 @@ class Raytracer
                     Vector3 intersectpoint = ray.start + ray.direction * (float)ray.distance;
                     Vector2 debugintersection = TranslateToDebug(intersectpoint, screen);
                     screen.Line((int)debugcpos.X, (int)debugcpos.Y, (int)debugintersection.X, (int)debugintersection.Y, (255 << 16) + (255 << 8));
+                    if (debugReflections.Count >= 2)
+                    {
+                        for (int i = 0; i < debugReflections.Count - 1; i++)
+                        {
+                            screen.Line((int)debugReflections[i].X, (int)debugReflections[i].Y, (int)debugReflections[i + 1].X, (int)debugReflections[i + 1].Y, CreateColor(new Vector3(0.5f, 0.5f, 1)));
+                        }
+                    }
                 }
             }
         screen.Line((int)screenleft.X, (int)screenleft.Y, (int)screenright.X, (int)screenright.Y, CreateColor(new Vector3(1, 1, 1)));
@@ -49,9 +60,11 @@ class Raytracer
         return new Vector2(v.X * scale + 3 * screen.width / 4, -v.Z * scale + 3 * screen.height / 4);
     }
 
+
     public Vector3 HandleRay(Ray ray, Scene scene, int recursion, bool refracIntersect = false)
     {
         intersection = scene.intersectScene(ray);
+        debugReflections.Add(TranslateToDebug(intersection.intersectPoint, screen));
         if (intersection != null)
         {
             if (recursion < 10)

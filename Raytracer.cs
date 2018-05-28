@@ -104,8 +104,6 @@ class Raytracer
         Vector3 color = Vector3.Zero;
         foreach (Light light in scene.lights)
         {
-            Vector3 reflect = ((intersection.intersectPoint - light.position) - 2 * Vector3.Dot((intersection.intersectPoint - light.position), intersection.intersectNorm) * intersection.intersectNorm).Normalized();
-            float energy = Vector3.Dot((c.position - intersection.intersectPoint), reflect);
             float distance = (light.position - intersection.intersectPoint).Length;
             Vector3 shadowRayDir = (light.position - intersection.intersectPoint).Normalized();
             if (!LightsourceVisible(intersection.intersectNorm, shadowRayDir)) color += Vector3.Zero;
@@ -116,7 +114,7 @@ class Raytracer
                 {
                     float NdotL = Vector3.Dot(intersection.intersectNorm, shadowRayDir);
                     float attenuation = 1 / (distance * distance);
-                    color += (MathHelper.Clamp(NdotL, 0, 1) * attenuation * light.color * intersection.color * (float)(Math.Pow(energy, intersection.specularity) / energy));
+                    color += (MathHelper.Clamp(NdotL, 0, 1) * attenuation * light.color * intersection.color);
                 }
                 else color += Vector3.Zero;
             }

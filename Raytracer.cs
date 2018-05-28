@@ -10,7 +10,9 @@ class Raytracer
     Ray ray;
     public Ray shadowRay;
     Scene scene;
-    Surface screen;
+    Surface screen;   
+    bool showdebugprimary = true, showdebugsecondary = false, showdebugshadow = true;
+    int colorindex = 0;
     Intersection intersection;
     List<Vector2> debugReflections;
     Camera c;
@@ -41,16 +43,31 @@ class Raytracer
 
                 if (y == 256 && x % 25 == 0)
                 {
+                    colorindex = 0;
                     Vector3 intersectpoint = ray.start + ray.direction * (float)ray.distance;
                     Vector2 debugintersection = TranslateToDebug(intersectpoint, screen);
-                    screen.Line((int)debugcpos.X, (int)debugcpos.Y, (int)debugintersection.X, (int)debugintersection.Y, (255 << 16) + (255 << 8));
-                    if (debugReflections.Count >= 2)
+                    if (showdebugprimary)
+                    {                       
+                        screen.Line((int)debugcpos.X, (int)debugcpos.Y, (int)debugintersection.X, (int)debugintersection.Y, (255 << 16) + (255 << 8));
+                    }
+                    if (debugReflections.Count >= 2 && showdebugsecondary)
                     {
                         for (int i = 0; i < debugReflections.Count - 1; i++)
                         {
                             screen.Line((int)debugReflections[i].X, (int)debugReflections[i].Y, (int)debugReflections[i + 1].X, (int)debugReflections[i + 1].Y, CreateColor(new Vector3(0.5f, 0.5f, 1)));
                         }
                     }
+                    foreach (Light l in scene.lights)
+                    {
+                        bool isLighted = CastShadowRay(intersection, shadowRay.direction, (l.position - intersectpoint).Length);
+                        if (showdebugshadow && isLighted)
+                        {
+                            Vector2 debuglpos = TranslateToDebug(l.position, screen);
+                            screen.Line((int)debuglpos.X, (int)debuglpos.Y, (int)debugintersection.X, (int)debugintersection.Y, (255 << (16 - 2 * (colorindex % 8))));
+                        }
+                        colorindex++;
+                    }
+                    
                 }
             }
         screen.Line((int)screenleft.X, (int)screenleft.Y, (int)screenright.X, (int)screenright.Y, CreateColor(new Vector3(1, 1, 1)));
@@ -61,7 +78,6 @@ class Raytracer
     {
         return new Vector2(v.X * scale + 3 * screen.width / 4, -v.Z * scale + 3 * screen.height / 4);
     }
-
 
     public Vector3 HandleRay(Ray ray, Scene scene, int recursion, bool refracIntersect = false)
     {

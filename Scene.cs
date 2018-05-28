@@ -13,7 +13,7 @@ class Scene
     public Scene()
     {
         primitives.Add(new Sphere(new Vector3(3, 0, 7), new Vector3(0f, 1, 0.5f), 1, "partial"));
-        primitives.Add(new Sphere(new Vector3(0, 0, 8), new Vector3(0.5f, 1f, 0.5f), 1, "normal", 1.1f));
+        primitives.Add(new Sphere(new Vector3(0, 0, 8), new Vector3(0.5f, 1f, 0.5f), 1, "normal", 1.0f));
         primitives.Add(new Sphere(new Vector3(-3, 0, 7), new Vector3(1, 1, 1), 1, "mirror"));
         primitives.Add(new Plane(20, new Vector3(1, 1, 0), new Vector3(0, 0, -1))); //back
         primitives.Add(new Plane(1, new Vector3(1, 1, 1), new Vector3(0, -1, 0), true)); //floor
@@ -21,8 +21,8 @@ class Scene
         primitives.Add(new Plane(10, new Vector3(0, 1, 1), new Vector3(1, 0, 0))); //left
         primitives.Add(new Plane(10, new Vector3(1, 0, 0), new Vector3(-1, 0, 0))); //right
         primitives.Add(new Plane(2, new Vector3(1, 1, 1), new Vector3(0, 0, 1))); //behind
-        lights.Add(new Light(new Vector3(0, -0, 15), new Vector3(0.1f, 0.1f, 0.1f)));
-        lights.Add(new Light(new Vector3(0, -5, 3), new Vector3(0.15f, 0.15f, 0.15f)));
+        lights.Add(new Light(new Vector3(1, 0, 3), new Vector3(0.15f, 0.15f, 0.15f)));
+        lights.Add(new Light(new Vector3(-1, 0, 3), new Vector3(0.15f, 0.15f, 0.15f)));
         //lights.Add(new Light(new Vector3(5, 0, 2), new Vector3(0, 0, 1)));
     }
 

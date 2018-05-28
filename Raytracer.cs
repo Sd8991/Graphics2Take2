@@ -65,7 +65,7 @@ class Raytracer
 
     public Vector3 HandleRay(Ray ray, Scene scene, int recursion, bool refracIntersect = false)
     {
-        intersection = scene.intersectScene(ray);
+        intersection = scene.intersectScene(ray, refracIntersect);
         debugReflections.Add(TranslateToDebug(intersection.intersectPoint, screen));
         if (intersection != null)
         {

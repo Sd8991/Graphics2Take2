@@ -17,7 +17,7 @@ class Game
     {
         rayTracer = new Raytracer();
         a = new Application();
-        c = new Camera(Vector3.Zero, new Vector3(0,0,1), 90);
+        c = new Camera(Vector3.Zero, new Vector3(0,0,1), 90); //set FOV here
         c.Screen();
         s = new Scene();
     }

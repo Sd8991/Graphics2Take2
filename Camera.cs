@@ -33,7 +33,7 @@ class Camera
         screenWidth = rightUpperCorner - leftUpperCorner;
     }
 
-    public Ray ShootRay(Vector3 point)
+    public Ray ShootRay(Vector3 point)  //shoots a ray at the given point on the screen
     {
         Point = leftUpperCorner + point.X * screenWidth + point.Y * (screenHeight);
         Vector3 rayDir = (Point - position);
@@ -41,13 +41,13 @@ class Camera
         return new Ray(position, rayDir);
     } 
 
-    public float ProcessFOV(float fov)
+    public float ProcessFOV(float fov)  //converts the FOV in degrees to the appropriate screen width/height
     {
         fov = fov / 360 * 2 * (float)Math.PI;
         return (float)Math.Tan(fov / 2);
     }
 
-    public Vector3 ProcessTarget(Vector3 target)
+    public Vector3 ProcessTarget(Vector3 target)    //returns a camera direction aimed at the provided target coordinates
     {
         return (target - position).Normalized();
     }

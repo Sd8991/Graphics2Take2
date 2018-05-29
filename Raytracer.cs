@@ -11,7 +11,7 @@ class Raytracer
     public Ray shadowRay;
     Scene scene;
     Surface screen;   
-    bool showdebugprimary = true, showdebugsecondary = false, showdebugshadow = true;
+    bool showdebugprimary = true, showdebugsecondary = false, showdebugshadow = false;
     int colorindex = 0;
     Intersection intersection;
     List<Vector2> debugReflections;
@@ -41,7 +41,7 @@ class Raytracer
                 }
                 catch { screen.pixels[(int)x + (int)y * screen.width] = 0; }
 
-                if (y == 256 && x % 25 == 0)
+                if (y == 256 && x % 25 == 0)    //debug rendering
                 {
                     colorindex = 0;
                     Vector3 intersectpoint = ray.start + ray.direction * (float)ray.distance;
@@ -74,18 +74,32 @@ class Raytracer
 
     }
 
-    public Vector2 TranslateToDebug(Vector3 v, Surface screen)
+    public Vector2 TranslateToDebug(Vector3 v, Surface screen) //converts a position in the scene to a position on the debug screen
     {
         return new Vector2(v.X * scale + 3 * screen.width / 4, -v.Z * scale + 3 * screen.height / 4);
     }
 
-    public Vector3 HandleRay(Ray ray, Scene scene, int recursion, bool refracIntersect = false)
+    public void DebugSphere(Sphere s, Surface screen) //draws the provided Sphere to the debug screen
+    {
+        float debugradius = (float)Math.Sqrt(Math.Pow(s.radius, 2) - Math.Pow(c.position.Y - s.position.Y, 2));
+        Vector2 center = TranslateToDebug(s.position, screen);
+        Vector2 prevPoint = new Vector2((int)(debugradius * Math.Cos(0) * scale + center.X), (int)(debugradius * Math.Sin(0) * scale + center.Y));
+        for (int i = 0; i < 100; i++)
+        {
+            Vector2 currPoint = new Vector2((int)(debugradius * Math.Cos((2 * Math.PI / 100) * i) * scale + center.X), (int)(debugradius * Math.Sin((2 * Math.PI / 100) * i) * scale + center.Y));
+            screen.Line((int)prevPoint.X, (int)prevPoint.Y, (int)currPoint.X, (int)currPoint.Y, CreateColor(s.color));
+            prevPoint = currPoint;
+        }
+    }
+
+    //determines the color that should be drawn to the screen point that the provided ray was shot at.
+    public Vector3 HandleRay(Ray ray, Scene scene, int recursion, bool refracIntersect = false) 
     {
         intersection = scene.intersectScene(ray, refracIntersect);
         debugReflections.Add(TranslateToDebug(intersection.intersectPoint, screen));
         if (intersection != null)
         {
-            if (recursion < 4)
+            if (recursion < 4) //set recursion cap here
             {
                 switch (intersection.nearestPrimitive.type)
                 {
@@ -115,7 +129,7 @@ class Raytracer
         return Vector3.Zero;
     }
 
-    public Vector3 DirectIllumination(Intersection intersection)
+    public Vector3 DirectIllumination(Intersection intersection) //handles coloring of diffuse components
     {
         Vector3 color = Vector3.Zero;
         foreach (Light light in scene.lights)
@@ -140,6 +154,25 @@ class Raytracer
         return color;
     }
 
+    public Ray Reflect(Ray ray, Intersection i) //returns the appropriate reflection of a ray on the provided intersection
+    {
+        Vector3 newRayDir = (ray.direction - 2 * i.intersectNorm * (Vector3.Dot(ray.direction, i.intersectNorm))).Normalized();
+        return new Ray(i.intersectPoint + 0.1f * newRayDir, newRayDir);
+    }
+
+    public Ray Refract(Ray ray, Intersection i, float n1, float n2)
+    {
+        float Ai = Vector3.Dot(ray.direction, intersection.intersectNorm) / (ray.direction.Length * intersection.intersectNorm.Length);
+        float k = 1 - (((n1 / n2) * (n1 / n2)) * (1 - (Ai * Ai)));
+        if (k >= 0)
+        {
+            float sumfin = (float)((n1 / n2) * Ai - Math.Sqrt(k));
+            Vector3 newRayDir = ((n1 / n2) * ray.direction + i.intersectNorm * (sumfin)).Normalized();
+            return new Ray(i.intersectPoint + 0.1f * newRayDir, newRayDir);
+        }
+        return Reflect(ray, i);
+    }
+
     public Vector3 GlossyIllumination(Ray ray, Intersection intersection)
     {
         return Vector3.Zero;
@@ -148,18 +181,6 @@ class Raytracer
     public int CreateColor(Vector3 color)
     {
         return ((int)Math.Min(255, color.X * 255) << 16) + ((int)Math.Min(255, color.Y * 255) << 8) + ((int)Math.Min(255, color.Z * 255));
-    }
-
-    public void DebugSphere(Sphere s, Surface screen)
-    {
-        Vector2 center = TranslateToDebug(s.position, screen);
-        Vector2 prevPoint = new Vector2((int)(s.radius * Math.Cos(0) * scale + center.X), (int)(s.radius * Math.Sin(0) * scale + center.Y));       
-        for(int i = 0; i < 100; i++)
-        {
-            Vector2 currPoint = new Vector2((int)(s.radius * Math.Cos((2 * Math.PI / 100) * i) * scale + center.X), (int)(s.radius * Math.Sin((2 * Math.PI / 100) * i) * scale + center.Y));
-            screen.Line((int)prevPoint.X, (int)prevPoint.Y, (int)currPoint.X, (int)currPoint.Y, CreateColor(s.color));
-            prevPoint = currPoint;
-        }
     }
 
     public bool LightsourceVisible(Vector3 N, Vector3 L)
@@ -180,24 +201,7 @@ class Raytracer
         return false;
     }
 
-    public Ray Reflect(Ray ray, Intersection i)
-    {
-        Vector3 newRayDir = (ray.direction - 2 * i.intersectNorm * (Vector3.Dot(ray.direction, i.intersectNorm))).Normalized();
-        return new Ray(i.intersectPoint + 0.1f * newRayDir, newRayDir);
-    }
 
-    public Ray Refract(Ray ray, Intersection i, float n1, float n2)
-    {
-        float Ai = Vector3.Dot(ray.direction, intersection.intersectNorm) / (ray.direction.Length * intersection.intersectNorm.Length);
-        float k = 1 - (((n1 / n2) * (n1 / n2)) * (1 - (Ai * Ai)));
-        if (k >= 0)
-        {
-            float sumfin = (float)((n1 / n2) * Ai - Math.Sqrt(k));
-            Vector3 newRayDir = ((n1 / n2) * ray.direction + i.intersectNorm * (sumfin)).Normalized();
-            return new Ray(i.intersectPoint + 0.1f * newRayDir, newRayDir);
-        }
-        return Reflect(ray, i);
-    }
 
     public int TexturePlane(Intersection i)
     {

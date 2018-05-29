@@ -13,11 +13,12 @@ class Game
     int moveFactor = 1;
 
     // initialize
-    public void Init()
+    public void Init() //if camera is set at a point other than the origin, you first have to move the camera to get the right view.
     {
         rayTracer = new Raytracer();
         a = new Application();
-        c = new Camera(Vector3.Zero, new Vector3(0,0,1), 90); //set FOV here
+        c = new Camera(new Vector3(0,0,0) , new Vector3(0,0,1), 90); //set FOV here
+        c.direction = c.ProcessTarget(c.position + new Vector3(0, 0, 1)); //set target here
         c.Screen();
         s = new Scene();
     }

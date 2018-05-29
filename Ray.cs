@@ -15,7 +15,7 @@ public class Ray
     {
         this.start = start;
         this.direction = direction;
-        distance = 100000;
+        distance = 100000; //arbitrary large value
     }
 }
 

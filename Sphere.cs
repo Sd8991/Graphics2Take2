@@ -17,7 +17,7 @@ class Sphere : Primitive
         this.position = position;
     }
 
-    public Intersection IntersectSphere(Ray ray)
+    public Intersection IntersectSphere(Ray ray) //gets the intersection with a primitive
     {
         Vector3 c = position - ray.start;
         float t = Vector3.Dot(c, ray.direction);
@@ -34,7 +34,7 @@ class Sphere : Primitive
         return new Intersection(ray, this, normal);
     }
 
-    public Intersection IntersectInnerSphere(Ray ray)
+    public Intersection IntersectInnerSphere(Ray ray) //Intersection method we wanted to use for glass balls, not used
     {
         float t = 0;
         float a = 1;

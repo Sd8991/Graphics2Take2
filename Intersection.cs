@@ -16,11 +16,11 @@ class Intersection
 
     public Intersection(Ray ray, Primitive primitive, Vector3 normal)
     {
-        nearestPrimitive = primitive;
-        intersectDistance = ray.distance;
-        intersectPoint = ray.start + (float)intersectDistance * ray.direction;
-        intersectNorm = normal;
-        color = primitive.color;
-        specularity = primitive.specularity;
+        nearestPrimitive = primitive; // the primitive that is being intersected with
+        intersectDistance = ray.distance; //distance camera to intersection
+        intersectPoint = ray.start + (float)intersectDistance * ray.direction; //the coordinates of the intersection
+        intersectNorm = normal; //normal of the intersection
+        color = primitive.color; //color of the primitive
+        specularity = primitive.specularity; //specularity of the primitive(not used)
     }
 }

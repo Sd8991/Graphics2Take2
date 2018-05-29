@@ -18,8 +18,8 @@ class Application
         if (keyboard[OpenTK.Input.Key.A]) c.position += new Vector3(-c.direction.Z, 0, c.direction.X).Normalized() / 10;//left (not based on dir yet)
         if (keyboard[OpenTK.Input.Key.S]) c.position -= c.direction / 10; ;//backward
         if (keyboard[OpenTK.Input.Key.D]) c.position += new Vector3(c.direction.Z, 0, -c.direction.X).Normalized() / 10;//right (not based on dir yet)
-        if (keyboard[OpenTK.Input.Key.Space]) c.position += new Vector3(0, 0.1f, 0);//up
-        if (keyboard[OpenTK.Input.Key.ShiftLeft]) c.position += new Vector3(0, -0.1f, 0);//down
+        if (keyboard[OpenTK.Input.Key.Space]) c.position += new Vector3(0, -0.1f, 0);//up
+        if (keyboard[OpenTK.Input.Key.ShiftLeft]) c.position += new Vector3(0, 0.1f, 0);//down
         if (c.position != currPos) adjustScreen(c, ref moveFactor);
     }
 
@@ -35,7 +35,7 @@ class Application
         if (c.direction != currDir) adjustScreen(c, ref moveFactor);
     }
 
-    public void adjustScreen(Camera c, ref int moveFactor)
+    public void adjustScreen(Camera c, ref int moveFactor)  //sets the screen to the appropriate position relative to the Camera after movement
     {
         c.screenCenter = c.position + c.direction;
         c.Screen();

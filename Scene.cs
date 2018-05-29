@@ -26,6 +26,7 @@ class Scene
         //lights.Add(new Light(new Vector3(5, 0, 2), new Vector3(0, 0, 1)));
     }
 
+    //processes intersections for the provided ray
     public Intersection intersectScene(Ray ray, bool refractIntersect,float maxDis = float.PositiveInfinity)
     {
         float minDis = 0.1f;

@@ -128,9 +128,11 @@ class Raytracer
                 bool isLighted = CastShadowRay(intersection, shadowRayDir, distance);
                 if (isLighted)
                 {
+                    Vector3 R = (intersection.intersectPoint - light.position) - 2 * intersection.intersectNorm * Vector3.Dot((intersection.intersectPoint - light.position), intersection.intersectNorm);
+                    Vector3 V = c.position - intersection.intersectPoint;
                     float NdotL = Vector3.Dot(intersection.intersectNorm, shadowRayDir);
                     float attenuation = 1 / (distance * distance);
-                    color += (MathHelper.Clamp(NdotL, 0, 1) * attenuation * light.color * intersection.color);
+                    color += MathHelper.Clamp(NdotL, 0, 1) * attenuation * light.color * intersection.color;
                 }
                 else color += Vector3.Zero;
             }
